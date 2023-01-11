@@ -1,0 +1,216 @@
+---
+import HeroBanner from "../../components/HeroBanner.astro";
+import ImageDiv from "../../components/ImageDiv.astro";
+import AppLayout from "../../layouts/AppLayout.astro";
+import {
+  getCorrectedEntryUrl,
+  getEntryFileNameFromFilePath,
+  getParentEntryFileName,
+} from "../../utils/entryHelpers";
+
+const barEntries = (await Astro.glob("../../entries/foo/bar/*.mdx")).filter(
+  (entry) => {
+    const fileName = getEntryFileNameFromFilePath(entry.file);
+
+    return getParentEntryFileName(fileName) === fileName;
+  }
+);
+
+const foo = barEntries.filter((entry) => {
+  const tags = entry.frontmatter.tags;
+
+  if (!Array.isArray(tags)) return false;
+
+  return tags.includes("foo");
+});
+
+const TITLE = "Foo";
+---
+
+<AppLayout title={TITLE}>
+  <HeroBanner
+    backgroundPatternSrc="url('/images/patterns/temple.svg')"
+    title={TITLE}
+  />
+
+  <div class="page-section">
+    <div class="section-wrapper">
+      <h2 class="section-title">X</h2>
+
+      <p class="section-text">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.
+      </p>
+
+      <div class="image-grid image-grid-wides">
+        {
+          foo.map((entry) => (
+            <ImageDiv
+              backgroundImageSrc={`url("${entry.frontmatter.image.thumbnail}")`}
+              class="image-wide"
+              href={getCorrectedEntryUrl(entry.url, entry.file)}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="page-section">
+    <div class="section-wrapper">
+      <h2 class="section-title">Y</h2>
+
+      <p class="section-text">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.
+      </p>
+
+      <div class="image-grid image-grid-narrows">
+        {
+          barEntries.map((entry) => (
+            <ImageDiv
+              backgroundImageSrc={`url("${entry.frontmatter.image.thumbnail}")`}
+              class="image-narrow"
+              href={getCorrectedEntryUrl(entry.url, entry.file)}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="page-section">
+    <div class="section-wrapper">
+      <h2 class="section-title">Z</h2>
+
+      <p class="section-text">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.
+      </p>
+
+      <div class="image-grid image-grid-narrows">
+        {
+          barEntries.map((entry) => (
+            <ImageDiv
+              backgroundImageSrc={`url("${entry.frontmatter.image.thumbnail}")`}
+              class="image-narrow"
+              href={getCorrectedEntryUrl(entry.url, entry.file)}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</AppLayout>
+
+<style>
+  .image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-5);
+    margin-block-start: var(--spacing-6);
+    margin-inline: auto;
+  }
+
+  .image-grid-narrows {
+    max-width: 250px;
+  }
+
+  .image-grid-wides {
+    max-width: 400px;
+  }
+
+  .image-narrow {
+    height: 300px;
+  }
+
+  .image-wide {
+    height: 250px;
+  }
+
+  .page-section {
+    padding-block-end: var(--spacing-8);
+    padding-block-start: var(--spacing-7);
+    padding-inline: var(--app-padding-inline-small);
+  }
+
+  .page-section:nth-child(odd) {
+    background-color: var(--color-neutral-9);
+  }
+
+  .page-section:nth-child(odd) .section-text {
+    color: var(--color-neutral-2);
+  }
+
+  .page-section:nth-child(odd) .section-title {
+    color: var(--color-neutral-0);
+  }
+
+  .section-text {
+    color: var(--color-neutral-7);
+    max-inline-size: 30em;
+  }
+
+  .section-title {
+    font-size: var(--font-size-6);
+  }
+
+  @media (min-width: 556px) {
+    .image-grid-narrows {
+      max-width: 524px;
+    }
+
+    .image-narrow {
+      max-width: 250px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .page-section {
+      padding-block-end: var(--spacing-9);
+      padding-block-start: var(--spacing-8);
+      padding-inline: var(--app-padding-inline-large);
+    }
+
+    .section-text {
+      font-size: var(--font-size-3);
+    }
+
+    .section-title {
+      font-size: var(--font-size-7);
+    }
+
+    .section-wrapper {
+      margin-inline: auto;
+      max-inline-size: var(--app-content-max-inline-size);
+    }
+  }
+
+  @media (min-width: 846px) {
+    .image-grid-narrows {
+      max-width: 798px;
+    }
+  }
+
+  @media (min-width: 872px) {
+    .image-grid-wides {
+      max-width: 825px;
+    }
+
+    .image-wide {
+      max-width: 400px;
+    }
+  }
+
+  @media (min-width: 1120px) {
+    .image-grid-narrows {
+      max-width: 1072px;
+    }
+  }
+
+  @media (min-width: 1296px) {
+    .image-grid {
+      max-width: none;
+    }
+  }
+</style>

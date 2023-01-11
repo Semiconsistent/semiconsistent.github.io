@@ -1,0 +1,20 @@
+---
+import HeroBanner from "../components/HeroBanner.astro";
+import HomePageSection from "../components/HomePageSection.astro";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <HeroBanner
+    backgroundPatternSrc="url('/images/patterns/topography.svg')"
+    subtitle="Learning and Trying"
+    title="Semiconsistent"
+  />
+
+  <HomePageSection
+    backgroundPatternSrc="url('/images/patterns/temple.svg')"
+    href="/foo"
+    text={["Lorem ipsum..."]}
+    title="Foo"
+  />
+</AppLayout>

@@ -1,0 +1,121 @@
+---
+import type { MDXInstance } from "astro";
+import EntryH2 from "../../../components/EntryH2.astro";
+import EntryNav from "../../../components/EntryNav.astro";
+import HeroBanner from "../../../components/HeroBanner.astro";
+import AppLayout from "../../../layouts/AppLayout.astro";
+import {
+  getCorrectedEntryUrl,
+  getEntryFileNameFromFilePath,
+  getNormalizedEntryFileName,
+  getParentEntryFileName,
+} from "../../../utils/entryHelpers";
+
+export interface Props {
+  Content: MDXInstance<Record<string, unknown>>["Content"];
+  frontmatter: Record<string, unknown>;
+  tabs: {
+    href: string;
+    text: string;
+  }[];
+}
+
+export async function getStaticPaths() {
+  const entries = await Astro.glob("../../../entries/foo/bar/*.mdx");
+  const result: {
+    params: {
+      id: string;
+    };
+    props: Props;
+  }[] = [];
+  const subEntriesMap = new Map<
+    string,
+    MDXInstance<Record<string, unknown>>[]
+  >();
+
+  // Make sure the entries are sorted alphabetically.
+  entries.sort((entryA, entryB) =>
+    getEntryFileNameFromFilePath(entryA.file, true).localeCompare(
+      getEntryFileNameFromFilePath(entryB.file, true)
+    )
+  );
+
+  entries.forEach((entry) => {
+    const fileName = getEntryFileNameFromFilePath(entry.file, true);
+    const parentFileName = getParentEntryFileName(fileName);
+
+    if (parentFileName === fileName) {
+      subEntriesMap.set(fileName, [entry]);
+    } else {
+      subEntriesMap.set(parentFileName, [
+        ...(subEntriesMap.get(parentFileName) || []),
+        entry,
+      ]);
+    }
+  });
+
+  Array.from(subEntriesMap.values()).forEach((subEntries) => {
+    subEntries.forEach((subEntry) => {
+      result.push({
+        params: {
+          id: getNormalizedEntryFileName(
+            getEntryFileNameFromFilePath(subEntry.file, true)
+          ),
+        },
+        props: {
+          Content: subEntry.Content,
+          frontmatter: subEntry.frontmatter,
+          tabs: subEntries.map((tabEntry) => ({
+            href: getCorrectedEntryUrl(tabEntry.url, tabEntry.file),
+            text: String(
+              tabEntry.frontmatter.subtitle || tabEntry.frontmatter.title
+            ),
+          })),
+        },
+      });
+    });
+  });
+
+  return result;
+}
+
+const { Content, frontmatter, tabs } = Astro.props;
+---
+
+<AppLayout>
+  <HeroBanner
+    backgroundPatternSrc="url('/images/patterns/temple.svg')"
+    subtitle={String(frontmatter.subtitle || "")}
+    title={String(frontmatter.title || "")}
+  />
+
+  <EntryNav mainLink={{ href: "/foo", text: "Foo" }} tabs={tabs} />
+
+  <div class="foo-bar-page--content-wrapper">
+    <div class="foo-bar-page--content">
+      <Content components={{ h2: EntryH2 }} />
+    </div>
+  </div>
+</AppLayout>
+
+<style>
+  .foo-bar-page--content-wrapper {
+    padding-block-end: var(--spacing-8);
+    padding-block-start: var(--spacing-7);
+    padding-inline: var(--app-padding-inline-small);
+  }
+
+  .foo-bar-page--content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    margin-inline: auto;
+    max-inline-size: var(--app-content-max-inline-size);
+  }
+
+  @media (min-width: 768px) {
+    .foo-bar-page--content-wrapper {
+      padding-inline: var(--app-padding-inline-large);
+    }
+  }
+</style>
